@@ -8,14 +8,10 @@ import amf.core.parser.{Annotations, ErrorHandler, Fields}
 import amf.core.unsafe.PlatformSecrets
 import amf.plugins.document.vocabularies.AMLPlugin
 import amf.plugins.document.vocabularies.metamodel.document.DialectInstanceModel._
-import amf.plugins.document.vocabularies.metamodel.document.{
-  DialectInstanceFragmentModel,
-  DialectInstanceLibraryModel,
-  DialectInstanceModel,
-  DialectInstancePatchModel
-}
+import amf.plugins.document.vocabularies.metamodel.document.{DialectInstanceFragmentModel, DialectInstanceLibraryModel, DialectInstanceModel, DialectInstancePatchModel}
 import amf.plugins.document.vocabularies.model.domain.{DialectDomainElement, External}
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 trait ComposedInstancesSupport {
@@ -52,7 +48,7 @@ case class DialectInstance(fields: Fields, annotations: Annotations)
           val predicate = { (element: DomainElement) =>
             element.id == id
           }
-          findModelByCondition(predicate, encodes, first = true, ListBuffer.empty, Set.empty).headOption.orElse(
+          findModelByCondition(predicate, encodes, first = true, ListBuffer.empty, mutable.Set.empty).headOption.orElse(
             findInDeclaredModel(predicate, this, first = true, ListBuffer.empty, cycles).headOption.orElse(
               findInReferencedModels(id, this.references, cycles).headOption
             )
