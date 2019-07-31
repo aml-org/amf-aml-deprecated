@@ -135,7 +135,8 @@ trait DialectSyntax { this: DialectContext =>
 
   val documentsMappingOptions: Map[String, Boolean] = Map(
     "selfEncoded"      -> false,
-    "declarationsPath" -> false
+    "declarationsPath" -> false,
+    "keyProperty"      -> false
   )
 
   def closedNode(nodeType: String, id: String, map: YMap): Unit = {
@@ -1082,6 +1083,7 @@ class DialectsParser(root: Root)(implicit override val ctx: DialectContext)
   def parseOptions(map: YMap, documentsModel: DocumentsModel): Option[Any] = {
     map.key("selfEncoded").map(v => parseSelfEncoded(v, documentsModel))
     map.key("declarationsPath").map(v => parseDeclarationsPath(v, documentsModel))
+    map.key("keyProperty").map(v => parseKeyProperty(v, documentsModel))
   }
 
   private def parseSelfEncoded(entry: YMapEntry, documentsModel: DocumentsModel) = {
@@ -1093,6 +1095,19 @@ class DialectsParser(root: Root)(implicit override val ctx: DialectContext)
         ctx.violation(DialectError,
                       documentsModel.id,
                       "'selfEncoded' Option for a documents mapping must be a boolean",
+                      entry)
+    }
+  }
+
+  private def parseKeyProperty(entry: YMapEntry, documentsModel: DocumentsModel) = {
+    entry.value.tagType match {
+      case YType.Bool =>
+        val keyProperty = ValueNode(entry.value).boolean()
+        documentsModel.set(DocumentsModelModel.KeyProperty, keyProperty, Annotations(entry))
+      case _ =>
+        ctx.violation(DialectError,
+                      documentsModel.id,
+                      "'keyProperty' Option for a documents mapping must be a boolean",
                       entry)
     }
   }

@@ -189,4 +189,14 @@ class DialectsParsingTest extends DialectTests {
   test("generate mappings_lib test") {
     init().flatMap(_ => cycle("mappings_lib.json", "mappings_lib.raml", AmfJsonHint, Aml))
   }
+
+  // Key Property tests
+  test("parse 19 test - with key property") {
+    init().flatMap(_ => cycle("keyproperty/example19-keyproperty.raml", "keyproperty/example19-keyproperty.json", VocabularyYamlHint, Amf))
+  }
+
+  test("generate 19 test - with key property") {
+    init().flatMap(_ => cycle("keyproperty/example19-keyproperty.json", "keyproperty/example19-keyproperty.raml", AmfJsonHint, Aml))
+  }
+
 }

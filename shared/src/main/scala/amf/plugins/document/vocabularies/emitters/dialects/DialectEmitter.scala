@@ -165,14 +165,15 @@ case class DocumentsModelOptionsEmitter(dialect: Dialect,
   var emitters: Seq[EntryEmitter] = Seq()
 
   private def hasOptions: Boolean =
-    Seq(mapping.selfEncoded().option(), mapping.declarationsPath().option()).flatten.nonEmpty
+    Seq(mapping.selfEncoded().option(), mapping.declarationsPath().option(), mapping.keyProperty().option()).flatten.nonEmpty
 
   val sortedNodes: Seq[MapEntryEmitter] = if (hasOptions) {
     val options =
-      Map("selfEncoded" -> mapping.selfEncoded().option(), "declarationsPath" -> mapping.declarationsPath().option())
-    val types = Map("selfEncoded" -> YType.Bool, "declarationsPath" -> YType.Str)
+      Map("selfEncoded" -> mapping.selfEncoded().option(), "declarationsPath" -> mapping.declarationsPath().option(), "keyProperty" -> mapping.keyProperty().option())
+    val types = Map("selfEncoded" -> YType.Bool, "keyProperty" -> YType.Bool, "declarationsPath" -> YType.Str)
     val annotations = Map("selfEncoded" -> mapping.selfEncoded().annotations(),
-                          "declarationsPath" -> mapping.declarationsPath().annotations())
+                          "declarationsPath" -> mapping.declarationsPath().annotations(),
+                          "keyProperty" -> mapping.keyProperty().annotations())
 
     val optionNodes: Seq[MapEntryEmitter] = options.map {
       case (optionName, maybeValue) =>

@@ -78,4 +78,9 @@ case class DocumentsModel(override private[amf] val _internal: InternalDocuments
   def withDeclarationsPath(declarationsPath: String): DocumentsModel = {
     _internal.withDeclarationsPath(declarationsPath)
   }
+
+  def keyProperty(): BoolField = _internal.keyProperty()
+  def withKeyProperty(keyProperty: Boolean): DocumentsModel = {
+    _internal.withKeyProperty(keyProperty)
+  }
 }

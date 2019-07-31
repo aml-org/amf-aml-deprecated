@@ -488,7 +488,11 @@ class DialectInstanceParser(root: Root)(implicit override val ctx: DialectInstan
         ctx.findNodeMapping(mapping.encoded().value()) match {
           case Some(nodeMapping) =>
             val path = dialectInstance.id + "#"
-            parseNode(path, encodedElementDefaultId(dialectInstance), map, nodeMapping, Map(), rootNode = true, None)
+            val additionalKey =
+              if (documents.keyProperty().value()) {
+                Some(ctx.dialect.name().value())
+              } else None
+            parseNode(path, encodedElementDefaultId(dialectInstance), map, nodeMapping, Map(), rootNode = true, None, additionalKey)
           case _ => None
         }
       }
@@ -523,7 +527,8 @@ class DialectInstanceParser(root: Root)(implicit override val ctx: DialectInstan
                       entries: Map[YNode, YNode],
                       mapping: NodeMapping,
                       ast: YPart,
-                      rootNode: Boolean): Unit = {
+                      rootNode: Boolean,
+                      additionalKey: Option[String]): Unit = {
     val rootProps: Set[String] = if (rootNode) {
       ctx.rootProps
     } else {
@@ -533,6 +538,7 @@ class DialectInstanceParser(root: Root)(implicit override val ctx: DialectInstan
     val inNode = entries.keys
       .map(_.value.asInstanceOf[YScalar].text)
       .filter(p => !p.startsWith("$") && !p.startsWith("(") && !p.startsWith("x-"))
+      .filterNot(additionalKey.contains)
       .toSet
     val outside = inNode.diff(props)
     if (outside.nonEmpty) {
@@ -549,7 +555,8 @@ class DialectInstanceParser(root: Root)(implicit override val ctx: DialectInstan
                           mappable: NodeMappable,
                           additionalProperties: Map[String, Any],
                           rootNode: Boolean = false,
-                          givenAnnotations:Option[Annotations]): Option[DialectDomainElement] = {
+                          givenAnnotations:Option[Annotations],
+                          additionalKey: Option[String] = None): Option[DialectDomainElement] = {
     val result = ast.tagType match {
       case YType.Map =>
         val nodeMap = ast.as[YMap]
@@ -588,7 +595,7 @@ class DialectInstanceParser(root: Root)(implicit override val ctx: DialectInstan
                     case None => // ignore
                   }
                 }
-                checkClosedNode(finalId, mapping.id, nodeMap.map, mapping, nodeMap, rootNode)
+                checkClosedNode(finalId, mapping.id, nodeMap.map, mapping, nodeMap, rootNode, additionalKey)
                 Some(node)
 
               case unionMapping: UnionNodeMapping =>

@@ -369,6 +369,19 @@ trait DialectInstancesParsingTest extends DialectTests {
     withDialect("dialect28.raml", "example28.json", "example28.raml", AmfJsonHint, Aml)
   }
 
+  test("parse 29 test - keyproperty") {
+    withDialect("dialect29.raml", "example29.raml", "example29.json", VocabularyYamlHint, Amf)
+  }
+
+  test("generate 29 test - keyproperty") {
+    withDialect("dialect29.raml", "example29.json", "example29.raml", AmfJsonHint, Aml)
+  }
+
+
+  test("parse 29 invalid test - keyproperty") {
+    withDialect("dialect29.raml", "example29.raml", "example29.json", VocabularyYamlHint, Amf)
+  }
+
   test("Generate instance with invalid property terms") {
     withDialect(
       "/invalids/schema-uri/dialect.yaml",

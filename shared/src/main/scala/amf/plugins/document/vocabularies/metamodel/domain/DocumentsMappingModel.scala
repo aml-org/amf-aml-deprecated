@@ -89,9 +89,17 @@ object DocumentsModelModel extends DomainElementModel {
              "declarations path",
              "Information about the AST location of the declarations to be parsed as declared domain elements")
   )
+  val KeyProperty = Field(
+    Bool,
+    Namespace.Meta + "keyProperty",
+    ModelDoc(
+      ModelVocabularies.Meta,
+      "key property",
+      "Information about whether the dialect is defined by the header or a key property")
+  )
 
   override def fields: List[Field] =
-    Root :: Fragments :: Library :: SelfEncoded :: DeclarationsPath :: DomainElementModel.fields
+    Root :: Fragments :: Library :: SelfEncoded :: DeclarationsPath :: KeyProperty :: DomainElementModel.fields
 
   override def modelInstance: AmfObject = DocumentsModel()
 
