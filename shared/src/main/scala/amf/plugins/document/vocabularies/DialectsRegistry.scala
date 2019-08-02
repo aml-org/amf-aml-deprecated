@@ -57,7 +57,7 @@ class DialectsRegistry extends AMFDomainEntityResolver with PlatformSecrets {
 
   def findDialectForHeader(header:String):Option[Dialect] = {
     val dialectId = headerKey(header.split("\\|").head)
-    map.get(dialectId)
+    map.get(dialectId).filter(d => !d.documents().keyProperty().value())
   }
   /**
     * Finds and resolve if unresolved a resolved dialect, the output of this invocation is a dialect ready to parse
