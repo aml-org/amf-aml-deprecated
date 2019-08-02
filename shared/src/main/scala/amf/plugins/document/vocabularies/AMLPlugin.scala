@@ -7,7 +7,7 @@ import amf.core.emitter.RenderOptions
 import amf.core.metamodel.Obj
 import amf.core.model.document.BaseUnit
 import amf.core.model.domain.AnnotationGraphLoader
-import amf.core.parser.{DefaultParserSideErrorHandler, ErrorHandler, ParserContext, ReferenceHandler, SyamlParsedDocument}
+import amf.core.parser.{DefaultParserSideErrorHandler, ErrorHandler, ParserContext, ReferenceHandler, SyamlParsedDocument, _}
 import amf.core.rdf.RdfModel
 import amf.core.registries.AMFDomainEntityResolver
 import amf.core.remote.{Aml, Platform}
@@ -17,7 +17,7 @@ import amf.core.unsafe.PlatformSecrets
 import amf.core.validation.core.ValidationProfile
 import amf.core.validation.{AMFValidationReport, EffectiveValidations, SeverityLevels, ValidationResultProcessor}
 import amf.internal.environment.Environment
-import amf.plugins.document.vocabularies.AMLPlugin.{containsVersion, registry}
+import amf.plugins.document.vocabularies.AMLPlugin.registry
 import amf.plugins.document.vocabularies.annotations.{AliasesLocation, CustomId, JsonPointerRef, RefInclude}
 import amf.plugins.document.vocabularies.emitters.dialects.{DialectEmitter, RamlDialectLibraryEmitter}
 import amf.plugins.document.vocabularies.emitters.instances.DialectInstancesEmitter
@@ -48,51 +48,41 @@ trait RamlHeaderExtractor {
 
   }
 
-  def comment(document: YDocument): Option[YComment] =
-    document.children
-      .find(v => v.isInstanceOf[YComment])
-      .asInstanceOf[Option[YComment]]
+  def comment(document: YDocument): Option[YComment] = document.children.collectFirst({case c:YComment => c})
 }
 
 trait JsonHeaderExtractor {
   def dialect(root: Root): Option[String] = {
     root.parsed match {
-      case parsedInput: SyamlParsedDocument =>
-        val parsed: Seq[Option[String]] =
-          parsedInput.document.children.collect {
-            case n: YNode =>
-              n.asOption[YMap] match {
-                case Some(m) =>
-                  try {
-                    m.entries.find(_.key.as[YScalar].text == "$dialect") map { entry =>
-                      entry.value.as[String]
-                    }
-                  } catch {
-                    case _: YException => None
-                  }
-                case None => None
-              }
-
-          }
-        parsed.collectFirst { case Some(metaText) => metaText }
+      case parsedInput: SyamlParsedDocument => dialectForDoc(parsedInput.document)
       case _ => None
     }
 
   }
+
+  def dialectForDoc(document:YDocument): Option[String] = {
+    document.node.toOption[YMap].map(_.entries).getOrElse(Nil).collectFirst({ case e if e.key.asScalar.exists(_.text == "$dialect") => e}).flatMap(e => e.value.asScalar.map(_.text))
+  }
 }
 
 trait KeyPropertyHeaderExtractor {
-  def dialectByKeyProperty(s: SyamlParsedDocument): Option[Dialect] =
+  def dialectByKeyProperty(root: YDocument): Option[Dialect] =
     registry
       .allDialects()
-      .find(d => d.documents().keyProperty().value() && containsVersion(s.document.children, d))
+      .find(d => d.documents().keyProperty().value() && containsVersion(root, d))
 
   def dialectInKey(root: Root): Boolean =
     root.parsed match {
       case parsedInput: SyamlParsedDocument =>
-        dialectByKeyProperty(parsedInput).isDefined
+        dialectByKeyProperty(parsedInput.document).isDefined
       case _ => false
     }
+
+  private def containsVersion(document: YDocument, d: Dialect): Boolean =
+    document.node.toOption[YMap].map(_.entries)
+    .getOrElse(Nil)
+      .collectFirst({ case e if e.key.asScalar.exists(scalar => scalar.text == d.name().value()) => e})
+      .exists(e => {e.value.asScalar.exists(_.text ==  d.version().value())})
 }
 
 object DialectHeader extends RamlHeaderExtractor with JsonHeaderExtractor with KeyPropertyHeaderExtractor {
@@ -203,57 +193,45 @@ object AMLPlugin
       case _ =>
         dialect(document).map(metaText => s"%$metaText")
     }
+
     maybeMetaText match {
-      case None => parseDialectInstance(document, parentContext)
-      case Some(metaText) =>
-        metaText match {
-          case ExtensionHeader.VocabularyHeader =>
-            Some(new VocabulariesParser(document)(new VocabularyContext(parentContext)).parseDocument())
-          case ExtensionHeader.DialectLibraryHeader =>
-            Some(
-              new DialectsParser(document)(new DialectContext(parentContext))
-                .parseLibrary())
-          case ExtensionHeader.DialectFragmentHeader =>
-            Some(
-              new DialectsParser(document)(new DialectContext(parentContext))
-                .parseFragment())
-          case ExtensionHeader.DialectHeader =>
-            parseAndRegisterDialect(document, parentContext)
-          case header =>
-            val headerParsed      = parseDialectInstance(header, document, parentContext)
-
-            lazy val canParseDialectKey = dialect(document).isDefined
-
-            lazy val canKeyParsed =
-              document.parsed match {
-                case s: SyamlParsedDocument =>
-                  dialectByKeyProperty(s)
-                case _ => None
-              }
-
-            implicit def bool2int(b:Boolean): Int = if (b) 1 else 0
-
-            headerParsed match {
-              case Some(hp) =>
-
-                val possibleDialectHp = registry.dialectFor(hp)
-
-                if(possibleDialectHp.exists(_.documents().keyProperty().value()))
-                  parentContext.violation(DialectValidations.DialectError, hp.id,s"${headerParsed.get.id} defined by ${hp
-                    .definedBy()} must not be defined by a Header")
-
-                var possibleParses: Int = possibleDialectHp.isDefined
-                possibleParses += canKeyParsed.isDefined
-                possibleParses += canParseDialectKey
-
-                if (possibleParses > 1)
-                  parentContext.violation(DialectValidations.DialectError, hp.id,s"${headerParsed.get.id} is defined by more than one known dialect" )
-                headerParsed
-              case _ => parseDialectInstance(document, parentContext)
-            }
-        }
+        case Some(metaText) if metaText == ExtensionHeader.VocabularyHeader =>
+          Some(new VocabulariesParser(document)(new VocabularyContext(parentContext)).parseDocument())
+        case Some(metaText) if metaText == ExtensionHeader.DialectLibraryHeader =>
+          Some(
+            new DialectsParser(document)(new DialectContext(parentContext))
+              .parseLibrary())
+        case Some(metaText) if metaText == ExtensionHeader.DialectFragmentHeader =>
+          Some(
+            new DialectsParser(document)(new DialectContext(parentContext))
+              .parseFragment())
+        case Some(metaText) if metaText == ExtensionHeader.DialectHeader =>
+          parseAndRegisterDialect(document, parentContext)
+        case header => parseDialectInstance(document,header, parentContext)
     }
   }
+
+  private def parseDialectInstance(document:Root,header:Option[String],parentContext:ParserContext) = {
+    val ydoc = document.parsed match {
+      case a:SyamlParsedDocument => a.document
+      case _ =>
+        throw new Exception(s"Cannot parse as dialect a document of kind: ${document.parsed.getClass.getSimpleName}")
+    }
+    val headerKey=header.map(h =>  h.split("\\|").head.replace(" ", ""))
+    val possibles: Iterable[Dialect] =
+      headerKey.flatMap(registry.findDialectForHeader) ++
+        dialectByKeyProperty(ydoc) ++
+        dialectForDoc(ydoc).flatMap(registry.dialectById)
+    possibles match {
+      case Nil if header.isDefined => throw new Exception(s"Unknown type of dialect header $header")
+      case Nil  => throw new Exception(s"Unknown type of dialect for doc: ${document.location}")
+      case other =>
+        if(other.size > 1)
+            parentContext.violation(DialectValidations.DialectError, document.location,s"${document.location} defined by by more than one dialect")
+        parseDocumentWithDialect(document,parentContext,other.head,headerKey)
+    }
+  }
+
 
   protected def unparseAsYDocument(unit: BaseUnit, renderOptions: RenderOptions): Option[YDocument] = {
     unit match {
@@ -311,49 +289,19 @@ object AMLPlugin
     }
   }
 
-  def containsVersion(root: IndexedSeq[YPart], d: Dialect): Boolean =
-    root
-      .find(p => p.isInstanceOf[YNode])
-      .exists(
-        yn =>
-          yn.children
-            .find(p => p.isInstanceOf[YMap])
-            .exists(m =>
-              m.children.exists {
-                case c: YMapEntry =>
-                  c.value.asOption[String].contains(d.version().value()) &&
-                    c.key.asScalar.exists(scalar => scalar.text == d.name().value())
-
-                case _ => false
-            }))
-
-  protected def parseDialectInstance(document: Root, parentContext: ParserContext): Option[DialectInstanceTrait] = {
-
-    document.parsed match {
-      case s: SyamlParsedDocument =>
-        dialectByKeyProperty(s)
-          .flatMap(d => parseDialectInstance(s"%${d.nameAndVersion()}", document, parentContext))
-      case _ => None
-    }
-  }
-
-  protected def parseDialectInstance(header: String,
-                                     document: Root,
-                                     parentContext: ParserContext): Option[DialectInstanceTrait] = {
-    val headerKey = header.split("\\|").head.replace(" ", "")
-
-    registry.withRegisteredDialect(header) { dialect =>
-      if (headerKey == dialect.header)
-        new DialectInstanceParser(document)(new DialectInstanceContext(dialect, parentContext)).parseDocument()
-      else if (dialect.isFragmentHeader(headerKey))
-        new DialectInstanceParser(document)(new DialectInstanceContext(dialect, parentContext)).parseFragment()
-      else if (dialect.isLibraryHeader(headerKey))
-        new DialectInstanceParser(document)(new DialectInstanceContext(dialect, parentContext)).parseLibrary()
-      else if (dialect.isPatchHeader(headerKey))
-        new DialectInstanceParser(document)(new DialectInstanceContext(dialect, parentContext).forPatch())
-          .parsePatch()
-      else
-        throw new Exception(s"Unknown type of dialect header $header")
+  protected def parseDocumentWithDialect(document:Root, parentContext: ParserContext, dialect: Dialect, header:Option[String]):Option[DialectInstanceTrait]  = {
+    registry.withRegisteredDialect(dialect){ resolvedDialect =>
+      header match {
+        case Some(headerKey) if resolvedDialect.isFragmentHeader(headerKey) =>
+          new DialectInstanceParser(document)(new DialectInstanceContext(resolvedDialect, parentContext)).parseFragment()
+        case Some(headerKey) if resolvedDialect.isLibraryHeader(headerKey) =>
+          new DialectInstanceParser(document)(new DialectInstanceContext(resolvedDialect, parentContext)).parseLibrary()
+        case Some(headerKey) if resolvedDialect.isPatchHeader(headerKey) =>
+          new DialectInstanceParser(document)(new DialectInstanceContext(resolvedDialect, parentContext).forPatch())
+            .parsePatch()
+        case _ =>
+          new DialectInstanceParser(document)(new DialectInstanceContext(resolvedDialect, parentContext)).parseDocument()
+      }
     }
   }
 

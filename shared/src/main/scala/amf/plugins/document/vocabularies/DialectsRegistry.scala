@@ -55,25 +55,36 @@ class DialectsRegistry extends AMFDomainEntityResolver with PlatformSecrets {
     this
   }
 
+  def findDialectForHeader(header:String):Option[Dialect] = {
+    val dialectId = headerKey(header.split("\\|").head)
+    map.get(dialectId)
+  }
   /**
     * Finds and resolve if unresolved a resolved dialect, the output of this invocation is a dialect ready to parse
     * @param header
     * @param k
     * @return
     */
+
+  def dialectById(id:String):Option[Dialect] = map.values.find(_.id == id)
+
   def withRegisteredDialect(header: String)(k: Dialect => Option[DialectInstanceTrait]): Option[DialectInstanceTrait] = {
     val dialectId = headerKey(header.split("\\|").head)
     map.get(dialectId) match {
-      case Some(dialect) =>
-        if (!resolved.getOrElse(dialectId, false)) {
-          val resolvedDialect = new DialectResolutionPipeline(DefaultParserSideErrorHandler(dialect)).resolve(dialect)
-          resolved += (dialectId -> true)
-          map += (dialectId      -> resolvedDialect)
-          k(resolvedDialect)
-        } else {
-          k(dialect)
-        }
+      case Some(dialect) => withRegisteredDialect(dialect)(k)
       case _ => None
+    }
+  }
+
+  def withRegisteredDialect(dialect: Dialect)(k: Dialect => Option[DialectInstanceTrait]): Option[DialectInstanceTrait] = {
+
+    if (!resolved.getOrElse(dialect.id, false)) {
+      val resolvedDialect = new DialectResolutionPipeline(DefaultParserSideErrorHandler(dialect)).resolve(dialect)
+      resolved += (dialect.id -> true)
+      map += (dialect.id      -> resolvedDialect)
+      k(resolvedDialect)
+    } else {
+      k(dialect)
     }
   }
 
