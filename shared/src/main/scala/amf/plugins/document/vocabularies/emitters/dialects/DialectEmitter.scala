@@ -169,11 +169,13 @@ case class DocumentsModelOptionsEmitter(dialect: Dialect,
 
   val sortedNodes: Seq[MapEntryEmitter] = if (hasOptions) {
     val options =
-      Map("selfEncoded" -> mapping.selfEncoded().option(), "declarationsPath" -> mapping.declarationsPath().option(), "keyProperty" -> mapping.keyProperty().option())
-    val types = Map("selfEncoded" -> YType.Bool, "keyProperty" -> YType.Bool, "declarationsPath" -> YType.Str)
+      Map("selfEncoded" -> mapping.selfEncoded().option(), "declarationsPath" -> mapping.declarationsPath().option(),
+        "keyProperty" -> mapping.keyProperty().option(), "referenceStyle" -> mapping.referenceStyle().option())
+    val types = Map("selfEncoded" -> YType.Bool, "keyProperty" -> YType.Bool, "declarationsPath" -> YType.Str, "referenceStyle" -> YType.Str)
     val annotations = Map("selfEncoded" -> mapping.selfEncoded().annotations(),
                           "declarationsPath" -> mapping.declarationsPath().annotations(),
-                          "keyProperty" -> mapping.keyProperty().annotations())
+                          "keyProperty" -> mapping.keyProperty().annotations(),
+                          "referenceStyle" -> mapping.referenceStyle().annotations())
 
     val optionNodes: Seq[MapEntryEmitter] = options.map {
       case (optionName, maybeValue) =>
@@ -186,9 +188,8 @@ case class DocumentsModelOptionsEmitter(dialect: Dialect,
     } collect { case Some(node) => node } toSeq
     val sorted: Seq[MapEntryEmitter] = ordering.sorted(optionNodes)
     sorted
-  } else {
+  } else
     Nil
-  }
 
   override def emit(b: EntryBuilder): Unit = {
     if (sortedNodes.nonEmpty) {

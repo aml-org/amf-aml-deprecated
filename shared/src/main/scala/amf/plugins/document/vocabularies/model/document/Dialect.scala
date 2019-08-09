@@ -7,7 +7,7 @@ import amf.core.model.domain.DomainElement
 import amf.core.parser.{Annotations, Fields}
 import amf.plugins.document.vocabularies.metamodel.document.DialectModel._
 import amf.plugins.document.vocabularies.metamodel.document.{DialectFragmentModel, DialectLibraryModel, DialectModel}
-import amf.plugins.document.vocabularies.model.domain.{DocumentsModel, External, NodeMapping}
+import amf.plugins.document.vocabularies.model.domain.{DocumentsModel, NodeMapping}
 
 trait MappingDeclarer { this: BaseUnit with DeclaresModel =>
 

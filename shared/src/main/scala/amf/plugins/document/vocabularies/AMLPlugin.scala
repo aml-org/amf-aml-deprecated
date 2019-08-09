@@ -106,6 +106,12 @@ object DialectHeader extends RamlHeaderExtractor with JsonHeaderExtractor with K
   }
 }
 
+object ReferenceStyles {
+  val RAML = "RamlStyle"
+  val JSONSCHEMA = "JsonSchemaStyle"
+  val all = Seq(RAML, JSONSCHEMA)
+}
+
 object AMLPlugin
     extends AMFDocumentPlugin
     with RamlHeaderExtractor

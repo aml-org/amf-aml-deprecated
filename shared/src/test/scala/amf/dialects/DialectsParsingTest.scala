@@ -199,4 +199,12 @@ trait DialectsParsingTest extends DialectTests {
     init().flatMap(_ => cycle("keyproperty/example19-keyproperty.json", "keyproperty/example19-keyproperty.raml", AmfJsonHint, Aml))
   }
 
+  // Reference Style tests
+  test("parse 19 test - with reference style") {
+    init().flatMap(_ => cycle("referencestyle/example19-referencestyle.raml", "referencestyle/example19-referencestyle.json", VocabularyYamlHint, Amf))
+  }
+
+  test("generate 19 test - with reference style") {
+    init().flatMap(_ => cycle("referencestyle/example19-referencestyle.json", "referencestyle/example19-referencestyle.raml", AmfJsonHint, Aml))
+  }
 }

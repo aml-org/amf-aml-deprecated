@@ -78,13 +78,15 @@ case class DocumentsModel(fields: Fields, annotations: Annotations) extends Doma
   def selfEncoded(): BoolField          = fields.field(SelfEncoded)
   def declarationsPath(): StrField      = fields.field(DeclarationsPath)
   def keyProperty(): BoolField          = fields.field(KeyProperty)
+  def referenceStyle(): StrField          = fields.field(ReferenceStyle)
 
   def withRoot(documentMapping: DocumentMapping): DocumentsModel     = set(Root, documentMapping)
   def withLibrary(library: DocumentMapping): DocumentsModel          = set(Library, library)
   def withFragments(fragments: Seq[DocumentMapping]): DocumentsModel = setArrayWithoutId(Fragments, fragments)
   def withSelfEncoded(selfEncoded: Boolean): DocumentsModel          = set(SelfEncoded, selfEncoded)
   def withDeclarationsPath(declarationsPath: String): DocumentsModel = set(DeclarationsPath, declarationsPath)
-  def withKeyProperty(keyProperty: Boolean): DocumentsModel = set(KeyProperty, keyProperty)
+  def withKeyProperty(keyProperty: Boolean): DocumentsModel          = set(KeyProperty, keyProperty)
+  def withReferenceStyle(referenceStyle: String): DocumentsModel         = set(ReferenceStyle, referenceStyle)
 
   override def meta: Obj = DocumentsModelModel
 

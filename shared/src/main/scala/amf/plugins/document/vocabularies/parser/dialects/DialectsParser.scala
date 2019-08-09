@@ -10,6 +10,7 @@ import amf.core.parser.SearchScope.All
 import amf.core.parser.{Annotations, BaseSpecParser, ErrorHandler, FutureDeclarations, ParserContext, _}
 import amf.core.utils._
 import amf.core.vocabulary.Namespace
+import amf.plugins.document.vocabularies.ReferenceStyles
 import amf.plugins.document.vocabularies.metamodel.document.DialectModel
 import amf.plugins.document.vocabularies.metamodel.domain.{DocumentsModelModel, NodeMappingModel, PropertyMappingModel}
 import amf.plugins.document.vocabularies.model.document.{Dialect, DialectFragment, DialectLibrary, Vocabulary}
@@ -136,7 +137,8 @@ trait DialectSyntax { this: DialectContext =>
   val documentsMappingOptions: Map[String, Boolean] = Map(
     "selfEncoded"      -> false,
     "declarationsPath" -> false,
-    "keyProperty"      -> false
+    "keyProperty"      -> false,
+    "referenceStyle"     -> false
   )
 
   def closedNode(nodeType: String, id: String, map: YMap): Unit = {
@@ -1084,6 +1086,7 @@ class DialectsParser(root: Root)(implicit override val ctx: DialectContext)
     map.key("selfEncoded").map(v => parseSelfEncoded(v, documentsModel))
     map.key("declarationsPath").map(v => parseDeclarationsPath(v, documentsModel))
     map.key("keyProperty").map(v => parseKeyProperty(v, documentsModel))
+    map.key("referenceStyle").map(v => parseReferenceStyle(v, documentsModel))
   }
 
   private def parseSelfEncoded(entry: YMapEntry, documentsModel: DocumentsModel) = {
@@ -1120,6 +1123,18 @@ class DialectsParser(root: Root)(implicit override val ctx: DialectContext)
         ctx.violation(DialectError,
                       documentsModel.id,
                       "'declarationsPath' Option for a documents mapping must be a String",
+                      entry)
+    }
+  }
+
+  private def parseReferenceStyle(entry: YMapEntry, documentsModel: DocumentsModel) = {
+    entry.value.tagType match {
+      case YType.Str if ReferenceStyles.all.contains(entry.value.asScalar.map(_.text).getOrElse("")) =>
+        documentsModel.set(DocumentsModelModel.ReferenceStyle, ValueNode(entry.value).string(), Annotations(entry))
+      case _ =>
+        ctx.violation(DialectError,
+                      documentsModel.id,
+                      "'referenceStyle' Option for a documents mapping must be a String [RamlStyle, JsonSchemaStyle]",
                       entry)
     }
   }

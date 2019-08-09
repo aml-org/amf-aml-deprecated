@@ -97,9 +97,16 @@ object DocumentsModelModel extends DomainElementModel {
       "key property",
       "Information about whether the dialect is defined by the header or a key property")
   )
+  val ReferenceStyle = Field(
+    Str,
+    Namespace.Meta + "referenceStyle",
+    ModelDoc(ModelVocabularies.Meta,
+      "reference style",
+      "Determines the style for inclusions (RamlStyle or JsonSchemaStyle)")
+  )
 
   override def fields: List[Field] =
-    Root :: Fragments :: Library :: SelfEncoded :: DeclarationsPath :: KeyProperty :: DomainElementModel.fields
+    Root :: Fragments :: Library :: SelfEncoded :: DeclarationsPath :: KeyProperty :: ReferenceStyle :: DomainElementModel.fields
 
   override def modelInstance: AmfObject = DocumentsModel()
 
