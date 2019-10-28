@@ -8,12 +8,12 @@
       "http://a.ml/vocabularies/document#Module",
       "http://a.ml/vocabularies/document#Unit"
     ],
-    "http://schema.org/name": [
+    "http://a.ml/vocabularies/core#name": [
       {
         "@value": "example"
       }
     ],
-    "http://schema.org/version": [
+    "http://a.ml/vocabularies/core#version": [
       {
         "@value": "1.23a"
       }
@@ -26,7 +26,7 @@
           "http://a.ml/vocabularies/meta#ExternalVocabulary",
           "http://a.ml/vocabularies/document#DomainElement"
         ],
-        "http://schema.org/alias": [
+        "http://a.ml/vocabularies/core#displayName": [
           {
             "@value": "v3"
           }
@@ -52,7 +52,7 @@
               "http://a.ml/vocabularies/meta#DocumentMapping",
               "http://a.ml/vocabularies/document#DomainElement"
             ],
-            "http://a.ml/vocabularies/meta#name": [
+            "http://a.ml/vocabularies/core#name": [
               {
                 "@value": "example 1.23a"
               }
@@ -95,7 +95,7 @@
     ],
     "http://a.ml/vocabularies/document#version": [
       {
-        "@value": "1.0.0"
+        "@value": "2.0.0"
       }
     ],
     "http://a.ml/vocabularies/document#references": [
@@ -108,12 +108,12 @@
           "http://a.ml/vocabularies/document#Module",
           "http://a.ml/vocabularies/document#Unit"
         ],
-        "http://schema.org/name": [
+        "http://a.ml/vocabularies/core#name": [
           {
             "@value": "example"
           }
         ],
-        "http://schema.org/version": [
+        "http://a.ml/vocabularies/core#version": [
           {
             "@value": "1.23b"
           }
@@ -126,7 +126,7 @@
               "http://a.ml/vocabularies/meta#ExternalVocabulary",
               "http://a.ml/vocabularies/document#DomainElement"
             ],
-            "http://schema.org/alias": [
+            "http://a.ml/vocabularies/core#displayName": [
               {
                 "@value": "v3"
               }
@@ -152,7 +152,7 @@
                   "http://a.ml/vocabularies/meta#DocumentMapping",
                   "http://a.ml/vocabularies/document#DomainElement"
                 ],
-                "http://a.ml/vocabularies/meta#name": [
+                "http://a.ml/vocabularies/core#name": [
                   {
                     "@value": "example 1.23b"
                   }
@@ -206,7 +206,7 @@
                 "@id": "http://test.com/v3#Simple"
               }
             ],
-            "http://schema.org/name": [
+            "http://a.ml/vocabularies/core#name": [
               {
                 "@value": "Other"
               }
@@ -223,7 +223,7 @@
                     "@id": "http://test.com/v3#ho"
                   }
                 ],
-                "http://schema.org/name": [
+                "http://a.ml/vocabularies/core#name": [
                   {
                     "@value": "ho"
                   }
@@ -273,7 +273,7 @@
                     "@id": "http://test.com/v3#a"
                   }
                 ],
-                "http://schema.org/name": [
+                "http://a.ml/vocabularies/core#name": [
                   {
                     "@value": "a"
                   }
@@ -338,7 +338,7 @@
         ],
         "http://a.ml/vocabularies/document#version": [
           {
-            "@value": "1.0.0"
+            "@value": "2.0.0"
           }
         ],
         "http://a.ml/vocabularies/document#references": [
@@ -350,7 +350,7 @@
             ],
             "http://a.ml/vocabularies/document#version": [
               {
-                "@value": "1.0.0"
+                "@value": "2.0.0"
               }
             ]
           }
@@ -365,7 +365,7 @@
               {
                 "http://a.ml/vocabularies/document-source-maps#element": [
                   {
-                    "@value": "http://schema.org/version"
+                    "@value": "http://a.ml/vocabularies/core#version"
                   }
                 ],
                 "http://a.ml/vocabularies/document-source-maps#value": [
@@ -389,7 +389,7 @@
               {
                 "http://a.ml/vocabularies/document-source-maps#element": [
                   {
-                    "@value": "http://schema.org/name"
+                    "@value": "http://a.ml/vocabularies/core#name"
                   }
                 ],
                 "http://a.ml/vocabularies/document-source-maps#value": [
@@ -427,7 +427,7 @@
           {
             "http://a.ml/vocabularies/document-source-maps#element": [
               {
-                "@value": "http://schema.org/version"
+                "@value": "http://a.ml/vocabularies/core#version"
               }
             ],
             "http://a.ml/vocabularies/document-source-maps#value": [
@@ -451,7 +451,7 @@
           {
             "http://a.ml/vocabularies/document-source-maps#element": [
               {
-                "@value": "http://schema.org/name"
+                "@value": "http://a.ml/vocabularies/core#name"
               }
             ],
             "http://a.ml/vocabularies/document-source-maps#value": [
@@ -476,7 +476,7 @@
             "@id": "http://test.com/v3#Anchor"
           }
         ],
-        "http://schema.org/name": [
+        "http://a.ml/vocabularies/core#name": [
           {
             "@value": "Anchor"
           }
@@ -493,7 +493,7 @@
                 "@id": "http://test.com/v3#value"
               }
             ],
-            "http://schema.org/name": [
+            "http://a.ml/vocabularies/core#name": [
               {
                 "@value": "value"
               }
@@ -562,7 +562,7 @@
             "@id": "http://test.com/v3#Base"
           }
         ],
-        "http://schema.org/name": [
+        "http://a.ml/vocabularies/core#name": [
           {
             "@value": "Base"
           }
@@ -579,7 +579,7 @@
                 "@id": "http://test.com/v3#other"
               }
             ],
-            "http://schema.org/name": [
+            "http://a.ml/vocabularies/core#name": [
               {
                 "@value": "other"
               }
@@ -659,7 +659,7 @@
             "@id": "http://test.com/v3#Simple"
           }
         ],
-        "http://schema.org/name": [
+        "http://a.ml/vocabularies/core#name": [
           {
             "@value": "Simple"
           }
@@ -676,7 +676,7 @@
                 "@id": "http://test.com/v3#s"
               }
             ],
-            "http://schema.org/name": [
+            "http://a.ml/vocabularies/core#name": [
               {
                 "@value": "s"
               }
@@ -718,7 +718,7 @@
               "http://www.w3.org/ns/shacl#Shape",
               "http://a.ml/vocabularies/document#DomainElement"
             ],
-            "http://schema.org/name": [
+            "http://a.ml/vocabularies/core#name": [
               {
                 "@value": "Simple"
               }
